@@ -633,145 +633,141 @@ public class MainFragment extends Fragment implements BottomBarButtonPath {
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
           computeScroll();
           ArrayList<LayoutElementParcelable> checkedItems = adapter.getCheckedItems();
-          switch (item.getItemId()) {
-            case R.id.openmulti:
-              try {
+          int itemId = item.getItemId();
+          if (itemId == R.id.openmulti) {
+            try {
 
-                Intent intent_result = new Intent(Intent.ACTION_SEND_MULTIPLE);
-                ArrayList<Uri> resulturis = new ArrayList<>();
+              Intent intent_result = new Intent(Intent.ACTION_SEND_MULTIPLE);
+              ArrayList<Uri> resulturis = new ArrayList<>();
 
-                for (LayoutElementParcelable element : checkedItems) {
-                  HybridFileParcelable baseFile = element.generateBaseFile();
-                  Uri resultUri = Utils.getUriForBaseFile(getActivity(), baseFile);
+              for (LayoutElementParcelable element : checkedItems) {
+                HybridFileParcelable baseFile = element.generateBaseFile();
+                Uri resultUri = Utils.getUriForBaseFile(getActivity(), baseFile);
 
-                  if (resultUri != null) {
-                    resulturis.add(resultUri);
-                  }
-                }
-
-                intent_result.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                getActivity().setResult(FragmentActivity.RESULT_OK, intent_result);
-                intent_result.putParcelableArrayListExtra(Intent.EXTRA_STREAM, resulturis);
-                getActivity().finish();
-                // mode.finish();
-              } catch (Exception e) {
-                e.printStackTrace();
-              }
-              return true;
-            case R.id.about:
-              LayoutElementParcelable x = checkedItems.get(0);
-              GeneralDialogCreation.showPropertiesDialogWithPermissions(
-                  (x).generateBaseFile(),
-                  x.permissions,
-                  (ThemedActivity) getActivity(),
-                  getMainActivity().isRootExplorer(),
-                  utilsProvider.getAppTheme());
-              mode.finish();
-              return true;
-            case R.id.delete:
-              GeneralDialogCreation.deleteFilesDialog(
-                  getContext(),
-                  LIST_ELEMENTS,
-                  getMainActivity(),
-                  checkedItems,
-                  utilsProvider.getAppTheme());
-              return true;
-            case R.id.share:
-              ArrayList<File> arrayList = new ArrayList<>();
-              for (LayoutElementParcelable e : checkedItems) {
-                arrayList.add(new File(e.desc));
-              }
-              if (arrayList.size() > 100)
-                Toast.makeText(
-                        getActivity(),
-                        getResources().getString(R.string.share_limit),
-                        Toast.LENGTH_SHORT)
-                    .show();
-              else {
-
-                switch (LIST_ELEMENTS.get(0).getMode()) {
-                  case DROPBOX:
-                  case BOX:
-                  case GDRIVE:
-                  case ONEDRIVE:
-                    FileUtils.shareCloudFile(
-                        LIST_ELEMENTS.get(0).desc, LIST_ELEMENTS.get(0).getMode(), getContext());
-                    break;
-                  default:
-                    FileUtils.shareFiles(
-                        arrayList, getActivity(), utilsProvider.getAppTheme(), accentColor);
-                    break;
+                if (resultUri != null) {
+                  resulturis.add(resultUri);
                 }
               }
-              return true;
-            case R.id.openparent:
-              loadlist(new File(checkedItems.get(0).desc).getParent(), false, OpenMode.FILE);
-              return true;
-            case R.id.all:
-              if (adapter.areAllChecked(CURRENT_PATH)) {
-                adapter.toggleChecked(false, CURRENT_PATH);
-                item.setTitle(R.string.select_all);
-              } else {
-                adapter.toggleChecked(true, CURRENT_PATH);
-                item.setTitle(R.string.deselect_all);
-              }
-              mode.invalidate();
 
-              return true;
-            case R.id.rename:
-              final HybridFileParcelable f;
-              f = checkedItems.get(0).generateBaseFile();
-              rename(f);
-              mode.finish();
-              return true;
-            case R.id.hide:
-              for (int i1 = 0; i1 < checkedItems.size(); i1++) {
-                hide(checkedItems.get(i1).desc);
+              intent_result.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+              getActivity().setResult(FragmentActivity.RESULT_OK, intent_result);
+              intent_result.putParcelableArrayListExtra(Intent.EXTRA_STREAM, resulturis);
+              getActivity().finish();
+              // mode.finish();
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
+            return true;
+          } else if (itemId == R.id.about) {
+            LayoutElementParcelable x = checkedItems.get(0);
+            GeneralDialogCreation.showPropertiesDialogWithPermissions(
+                    (x).generateBaseFile(),
+                    x.permissions,
+                    (ThemedActivity) getActivity(),
+                    getMainActivity().isRootExplorer(),
+                    utilsProvider.getAppTheme());
+            mode.finish();
+            return true;
+          } else if (itemId == R.id.delete) {
+            GeneralDialogCreation.deleteFilesDialog(
+                    getContext(),
+                    LIST_ELEMENTS,
+                    getMainActivity(),
+                    checkedItems,
+                    utilsProvider.getAppTheme());
+            return true;
+          } else if (itemId == R.id.share) {
+            ArrayList<File> arrayList = new ArrayList<>();
+            for (LayoutElementParcelable e : checkedItems) {
+              arrayList.add(new File(e.desc));
+            }
+            if (arrayList.size() > 100)
+              Toast.makeText(
+                      getActivity(),
+                      getResources().getString(R.string.share_limit),
+                      Toast.LENGTH_SHORT)
+                      .show();
+            else {
+
+              switch (LIST_ELEMENTS.get(0).getMode()) {
+                case DROPBOX:
+                case BOX:
+                case GDRIVE:
+                case ONEDRIVE:
+                  FileUtils.shareCloudFile(
+                          LIST_ELEMENTS.get(0).desc, LIST_ELEMENTS.get(0).getMode(), getContext());
+                  break;
+                default:
+                  FileUtils.shareFiles(
+                          arrayList, getActivity(), utilsProvider.getAppTheme(), accentColor);
+                  break;
               }
-              updateList();
-              mode.finish();
-              return true;
-            case R.id.ex:
-              getMainActivity().mainActivityHelper.extractFile(new File(checkedItems.get(0).desc));
-              mode.finish();
-              return true;
-            case R.id.cpy:
-            case R.id.cut:
-              {
-                HybridFileParcelable[] copies = new HybridFileParcelable[checkedItems.size()];
-                for (int i = 0; i < checkedItems.size(); i++) {
-                  copies[i] = checkedItems.get(i).generateBaseFile();
-                }
-                int op =
+            }
+            return true;
+          } else if (itemId == R.id.openparent) {
+            loadlist(new File(checkedItems.get(0).desc).getParent(), false, OpenMode.FILE);
+            return true;
+          } else if (itemId == R.id.all) {
+            if (adapter.areAllChecked(CURRENT_PATH)) {
+              adapter.toggleChecked(false, CURRENT_PATH);
+              item.setTitle(R.string.select_all);
+            } else {
+              adapter.toggleChecked(true, CURRENT_PATH);
+              item.setTitle(R.string.deselect_all);
+            }
+            mode.invalidate();
+
+            return true;
+          } else if (itemId == R.id.rename) {
+            final HybridFileParcelable f;
+            f = checkedItems.get(0).generateBaseFile();
+            rename(f);
+            mode.finish();
+            return true;
+          } else if (itemId == R.id.hide) {
+            for (int i1 = 0; i1 < checkedItems.size(); i1++) {
+              hide(checkedItems.get(i1).desc);
+            }
+            updateList();
+            mode.finish();
+            return true;
+          } else if (itemId == R.id.ex) {
+            getMainActivity().mainActivityHelper.extractFile(new File(checkedItems.get(0).desc));
+            mode.finish();
+            return true;
+          } else if (itemId == R.id.cpy || itemId == R.id.cut) {
+            HybridFileParcelable[] copies = new HybridFileParcelable[checkedItems.size()];
+            for (int i = 0; i < checkedItems.size(); i++) {
+              copies[i] = checkedItems.get(i).generateBaseFile();
+            }
+            int op =
                     item.getItemId() == R.id.cpy
-                        ? PasteHelper.OPERATION_COPY
-                        : PasteHelper.OPERATION_CUT;
+                            ? PasteHelper.OPERATION_COPY
+                            : PasteHelper.OPERATION_CUT;
 
-                PasteHelper pasteHelper = new PasteHelper(op, copies);
-                getMainActivity().setPaste(pasteHelper);
+            PasteHelper pasteHelper = new PasteHelper(op, copies);
+            getMainActivity().setPaste(pasteHelper);
 
-                mode.finish();
-                return true;
-              }
-            case R.id.compress:
-              ArrayList<HybridFileParcelable> copies1 = new ArrayList<>();
-              for (int i4 = 0; i4 < checkedItems.size(); i4++) {
-                copies1.add(checkedItems.get(i4).generateBaseFile());
-              }
-              GeneralDialogCreation.showCompressDialog(
-                  (MainActivity) getActivity(), copies1, CURRENT_PATH);
-              mode.finish();
-              return true;
-            case R.id.openwith:
-              FileUtils.openFile(new File(checkedItems.get(0).desc), getMainActivity(), sharedPref);
-              return true;
-            case R.id.addshortcut:
-              addShortcut(checkedItems.get(0));
-              mode.finish();
-              return true;
-            default:
-              return false;
+            mode.finish();
+            return true;
+          } else if (itemId == R.id.compress) {
+            ArrayList<HybridFileParcelable> copies1 = new ArrayList<>();
+            for (int i4 = 0; i4 < checkedItems.size(); i4++) {
+              copies1.add(checkedItems.get(i4).generateBaseFile());
+            }
+            GeneralDialogCreation.showCompressDialog(
+                    (MainActivity) getActivity(), copies1, CURRENT_PATH);
+            mode.finish();
+            return true;
+          } else if (itemId == R.id.openwith) {
+            FileUtils.openFile(new File(checkedItems.get(0).desc), getMainActivity(), sharedPref);
+            return true;
+          } else if (itemId == R.id.addshortcut) {
+            addShortcut(checkedItems.get(0));
+            mode.finish();
+            return true;
           }
+          return false;
         }
 
         // called when the user exits the action mode
@@ -803,50 +799,46 @@ public class MainFragment extends Fragment implements BottomBarButtonPath {
         @Override
         public void onReceive(Context context, Intent intent) {
           // load the list on a load broadcast
-          switch (openMode) {
-            case ROOT:
-            case FILE:
-              // local file system don't need an explicit load, we've set an observer to
-              // take actions on creation/moving/deletion/modification of file on current path
+          if (openMode == OpenMode.ROOT || openMode == OpenMode.FILE) {// local file system don't need an explicit load, we've set an observer to
+            // take actions on creation/moving/deletion/modification of file on current path
 
-              // run media scanner
-              String[] path = new String[1];
-              String arg = intent.getStringExtra(MainActivity.KEY_INTENT_LOAD_LIST_FILE);
+            // run media scanner
+            String[] path = new String[1];
+            String arg = intent.getStringExtra(MainActivity.KEY_INTENT_LOAD_LIST_FILE);
 
-              // run media scanner for only one context
-              if (arg != null && getMainActivity().getCurrentMainFragment() == MainFragment.this) {
+            // run media scanner for only one context
+            if (arg != null && getMainActivity().getCurrentMainFragment() == MainFragment.this) {
 
-                if (Build.VERSION.SDK_INT >= 19) {
+              if (Build.VERSION.SDK_INT >= 19) {
 
-                  path[0] = arg;
+                path[0] = arg;
 
-                  MediaScannerConnection.MediaScannerConnectionClient mediaScannerConnectionClient =
-                      new MediaScannerConnection.MediaScannerConnectionClient() {
-                        @Override
-                        public void onMediaScannerConnected() {}
+                MediaScannerConnection.MediaScannerConnectionClient mediaScannerConnectionClient =
+                        new MediaScannerConnection.MediaScannerConnectionClient() {
+                          @Override
+                          public void onMediaScannerConnected() {
+                          }
 
-                        @Override
-                        public void onScanCompleted(String path, Uri uri) {
+                          @Override
+                          public void onScanCompleted(String path, Uri uri) {
 
-                          Log.d("SCAN completed", path);
-                        }
-                      };
+                            Log.d("SCAN completed", path);
+                          }
+                        };
 
-                  if (mediaScannerConnection != null) {
-                    mediaScannerConnection.disconnect();
-                  }
-                  mediaScannerConnection =
-                      new MediaScannerConnection(context, mediaScannerConnectionClient);
-                  // FileUtils.scanFile(context, mediaScannerConnection, path);
-                } else {
-                  FileUtils.scanFile(new File(arg), context);
+                if (mediaScannerConnection != null) {
+                  mediaScannerConnection.disconnect();
                 }
+                mediaScannerConnection =
+                        new MediaScannerConnection(context, mediaScannerConnectionClient);
+                // FileUtils.scanFile(context, mediaScannerConnection, path);
+              } else {
+                FileUtils.scanFile(new File(arg), context);
               }
-              // break;
-            default:
-              updateList();
-              break;
+            }
+            // break;
           }
+          updateList();
         }
       };
 
@@ -946,38 +938,29 @@ public class MainFragment extends Fragment implements BottomBarButtonPath {
             // are we here to return an intent to another app
             returnIntentResults(e.generateBaseFile());
           } else {
-            switch (e.getMode()) {
-              case SMB:
-                launchSMB(e.generateBaseFile(), getMainActivity());
-                break;
-              case SFTP:
-                Toast.makeText(
-                        getContext(),
-                        getResources().getString(R.string.please_wait),
-                        Toast.LENGTH_LONG)
-                    .show();
-                SshClientUtils.launchSftp(e.generateBaseFile(), getMainActivity());
-                break;
-              case OTG:
-                FileUtils.openFile(
-                    OTGUtil.getDocumentFile(e.desc, getContext(), false),
-                    (MainActivity) getActivity(),
-                    sharedPref);
-                break;
-              case DROPBOX:
-              case BOX:
-              case GDRIVE:
-              case ONEDRIVE:
-                Toast.makeText(
-                        getContext(),
-                        getResources().getString(R.string.please_wait),
-                        Toast.LENGTH_LONG)
-                    .show();
-                CloudUtil.launchCloud(e.generateBaseFile(), openMode, getMainActivity());
-                break;
-              default:
-                FileUtils.openFile(new File(e.desc), (MainActivity) getActivity(), sharedPref);
-                break;
+            if (e.getMode() == OpenMode.SMB) {
+              launchSMB(e.generateBaseFile(), getMainActivity());
+            } else if (e.getMode() == OpenMode.SFTP) {
+              Toast.makeText(
+                      getContext(),
+                      getResources().getString(R.string.please_wait),
+                      Toast.LENGTH_LONG)
+                      .show();
+              SshClientUtils.launchSftp(e.generateBaseFile(), getMainActivity());
+            } else if (e.getMode() == OpenMode.OTG) {
+              FileUtils.openFile(
+                      OTGUtil.getDocumentFile(e.desc, getContext(), false),
+                      (MainActivity) getActivity(),
+                      sharedPref);
+            } else if (e.getMode() == OpenMode.DROPBOX || e.getMode() == OpenMode.BOX || e.getMode() == OpenMode.GDRIVE || e.getMode() == OpenMode.ONEDRIVE) {
+              Toast.makeText(
+                      getContext(),
+                      getResources().getString(R.string.please_wait),
+                      Toast.LENGTH_LONG)
+                      .show();
+              CloudUtil.launchCloud(e.generateBaseFile(), openMode, getMainActivity());
+            } else {
+              FileUtils.openFile(new File(e.desc), (MainActivity) getActivity(), sharedPref);
             }
 
             dataUtils.addHistoryFile(e.desc);
@@ -1257,31 +1240,26 @@ public class MainFragment extends Fragment implements BottomBarButtonPath {
   }
 
   private void startFileObserver() {
-    switch (openMode) {
-      case ROOT:
-      case FILE:
-        if (customFileObserver != null
-            && !customFileObserver.wasStopped()
-            && customFileObserver.getPath().equals(getCurrentPath())) {
-          return;
+    if (openMode == OpenMode.ROOT || openMode == OpenMode.FILE) {
+      if (customFileObserver != null
+              && !customFileObserver.wasStopped()
+              && customFileObserver.getPath().equals(getCurrentPath())) {
+        return;
+      }
+
+      File file = new File(CURRENT_PATH);
+
+      if (file.isDirectory() && file.canRead()) {
+        if (customFileObserver != null) {
+          // already a watcher instantiated, first it should be stopped
+          customFileObserver.stopWatching();
         }
 
-        File file = new File(CURRENT_PATH);
-
-        if (file.isDirectory() && file.canRead()) {
-          if (customFileObserver != null) {
-            // already a watcher instantiated, first it should be stopped
-            customFileObserver.stopWatching();
-          }
-
-          customFileObserver =
-              new CustomFileObserver(
-                  CURRENT_PATH, new FileHandler(this, listView, getBoolean(PREFERENCE_SHOW_THUMB)));
-          customFileObserver.startWatching();
-        }
-        break;
-      default:
-        break;
+        customFileObserver =
+                new CustomFileObserver(
+                        CURRENT_PATH, new FileHandler(this, listView, getBoolean(PREFERENCE_SHOW_THUMB)));
+        customFileObserver.startWatching();
+      }
     }
   }
 

@@ -306,34 +306,34 @@ public class CompressedExplorerFragment extends Fragment implements BottomBarBut
 
         // called when the user selects a contextual menu item
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-          switch (item.getItemId()) {
-            case R.id.all:
-              ArrayList<Integer> positions = compressedExplorerAdapter.getCheckedItemPositions();
-              boolean shouldDeselectAll = positions.size() != folder + file;
-              compressedExplorerAdapter.toggleChecked(shouldDeselectAll);
-              mode.invalidate();
-              item.setTitle(shouldDeselectAll ? R.string.deselect_all : R.string.select_all);
-              if (!shouldDeselectAll) {
-                selection = false;
-                mActionMode.finish();
-                mActionMode = null;
-              }
-              return true;
-            case R.id.ex:
-              Toast.makeText(getActivity(), getString(R.string.extracting), Toast.LENGTH_SHORT)
-                  .show();
+          int itemId = item.getItemId();
+          if (itemId == R.id.all) {
+            ArrayList<Integer> positions = compressedExplorerAdapter.getCheckedItemPositions();
+            boolean shouldDeselectAll = positions.size() != folder + file;
+            compressedExplorerAdapter.toggleChecked(shouldDeselectAll);
+            mode.invalidate();
+            item.setTitle(shouldDeselectAll ? R.string.deselect_all : R.string.select_all);
+            if (!shouldDeselectAll) {
+              selection = false;
+              mActionMode.finish();
+              mActionMode = null;
+            }
+            return true;
+          } else if (itemId == R.id.ex) {
+            Toast.makeText(getActivity(), getString(R.string.extracting), Toast.LENGTH_SHORT)
+                    .show();
 
-              String[] dirs =
-                  new String[compressedExplorerAdapter.getCheckedItemPositions().size()];
-              for (int i = 0; i < dirs.length; i++) {
-                dirs[i] =
-                    elements.get(compressedExplorerAdapter.getCheckedItemPositions().get(i)).path;
-              }
+            String[] dirs =
+                    new String[compressedExplorerAdapter.getCheckedItemPositions().size()];
+            for (int i = 0; i < dirs.length; i++) {
+              dirs[i] =
+                      elements.get(compressedExplorerAdapter.getCheckedItemPositions().get(i)).path;
+            }
 
-              decompressor.decompress(compressedFile.getPath(), dirs);
+            decompressor.decompress(compressedFile.getPath(), dirs);
 
-              mode.finish();
-              return true;
+            mode.finish();
+            return true;
           }
           return false;
         }

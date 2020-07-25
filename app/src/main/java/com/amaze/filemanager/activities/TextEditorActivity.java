@@ -394,46 +394,39 @@ public class TextEditorActivity extends ThemedActivity
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    switch (item.getItemId()) {
-      case android.R.id.home:
-        checkUnsavedChanges();
-        break;
-      case R.id.save:
-        // Make sure EditText is visible before saving!
-        saveFile(mInput.getText().toString());
-        break;
-      case R.id.details:
-        if (mFile.scheme == EditableFileAbstraction.SCHEME_FILE
-            && mFile.hybridFileParcelable.getFile().exists()) {
-          GeneralDialogCreation.showPropertiesDialogWithoutPermissions(
-              mFile.hybridFileParcelable, this, getAppTheme());
+    int itemId = item.getItemId();
+    if (itemId == android.R.id.home) {
+      checkUnsavedChanges();
+    } else if (itemId == R.id.save) {// Make sure EditText is visible before saving!
+      saveFile(mInput.getText().toString());
+    } else if (itemId == R.id.details) {
+      if (mFile.scheme == EditableFileAbstraction.SCHEME_FILE
+              && mFile.hybridFileParcelable.getFile().exists()) {
+        GeneralDialogCreation.showPropertiesDialogWithoutPermissions(
+                mFile.hybridFileParcelable, this, getAppTheme());
+      } else {
+        Toast.makeText(this, R.string.no_obtainable_info, Toast.LENGTH_SHORT).show();
+      }
+    } else if (itemId == R.id.openwith) {
+      if (mFile.scheme == EditableFileAbstraction.SCHEME_FILE) {
+        File currentFile = mFile.hybridFileParcelable.getFile();
+        if (currentFile.exists()) {
+          boolean useNewStack = getBoolean(PREFERENCE_TEXTEDITOR_NEWSTACK);
+          FileUtils.openWith(currentFile, this, useNewStack);
         } else {
-          Toast.makeText(this, R.string.no_obtainable_info, Toast.LENGTH_SHORT).show();
+          Toast.makeText(this, R.string.not_allowed, Toast.LENGTH_SHORT).show();
         }
-        break;
-      case R.id.openwith:
-        if (mFile.scheme == EditableFileAbstraction.SCHEME_FILE) {
-          File currentFile = mFile.hybridFileParcelable.getFile();
-          if (currentFile.exists()) {
-            boolean useNewStack = getBoolean(PREFERENCE_TEXTEDITOR_NEWSTACK);
-            FileUtils.openWith(currentFile, this, useNewStack);
-          } else {
-            Toast.makeText(this, R.string.not_allowed, Toast.LENGTH_SHORT).show();
-          }
-        } else {
-          Toast.makeText(this, R.string.reopen_from_source, Toast.LENGTH_SHORT).show();
-        }
-        break;
-      case R.id.find:
-        if (searchViewLayout.isShown()) hideSearchView();
-        else revealSearchView();
-        break;
-      case R.id.monofont:
-        item.setChecked(!item.isChecked());
-        mInput.setTypeface(item.isChecked() ? mInputTypefaceMono : mInputTypefaceDefault);
-        break;
-      default:
-        return false;
+      } else {
+        Toast.makeText(this, R.string.reopen_from_source, Toast.LENGTH_SHORT).show();
+      }
+    } else if (itemId == R.id.find) {
+      if (searchViewLayout.isShown()) hideSearchView();
+      else revealSearchView();
+    } else if (itemId == R.id.monofont) {
+      item.setChecked(!item.isChecked());
+      mInput.setTypeface(item.isChecked() ? mInputTypefaceMono : mInputTypefaceDefault);
+    } else {
+      return false;
     }
     return super.onOptionsItemSelected(item);
   }
@@ -567,99 +560,93 @@ public class TextEditorActivity extends ThemedActivity
 
   @Override
   public void onClick(View v) {
-    switch (v.getId()) {
-      case R.id.prev:
-        // upButton
-        if (mCurrent > 0) {
+    int id = v.getId();
+    if (id == R.id.prev) {// upButton
+      if (mCurrent > 0) {
 
-          // setting older span back before setting new one
+        // setting older span back before setting new one
+        Map.Entry keyValueOld = nodes.get(mCurrent).getKey();
+        if (getAppTheme().equals(AppTheme.LIGHT)) {
+          mInput
+                  .getText()
+                  .setSpan(
+                          new BackgroundColorSpan(Color.YELLOW),
+                          (Integer) keyValueOld.getKey(),
+                          (Integer) keyValueOld.getValue(),
+                          Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+        } else {
+          mInput
+                  .getText()
+                  .setSpan(
+                          new BackgroundColorSpan(Color.LTGRAY),
+                          (Integer) keyValueOld.getKey(),
+                          (Integer) keyValueOld.getValue(),
+                          Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+        }
+        // highlighting previous element in list
+        Map.Entry keyValueNew = nodes.get(--mCurrent).getKey();
+        mInput
+                .getText()
+                .setSpan(
+                        new BackgroundColorSpan(Utils.getColor(this, R.color.search_text_highlight)),
+                        (Integer) keyValueNew.getKey(),
+                        (Integer) keyValueNew.getValue(),
+                        Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+
+        // scrolling to the highlighted element
+        scrollView.scrollTo(
+                0,
+                (Integer) keyValueNew.getValue()
+                        + mInput.getLineHeight()
+                        + Math.round(mInput.getLineSpacingExtra())
+                        - getSupportActionBar().getHeight());
+      }
+    } else if (id == R.id.next) {// downButton
+      if (mCurrent < nodes.size() - 1) {
+
+        // setting older span back before setting new one
+        if (mCurrent != -1) {
+
           Map.Entry keyValueOld = nodes.get(mCurrent).getKey();
           if (getAppTheme().equals(AppTheme.LIGHT)) {
             mInput
-                .getText()
-                .setSpan(
-                    new BackgroundColorSpan(Color.YELLOW),
-                    (Integer) keyValueOld.getKey(),
-                    (Integer) keyValueOld.getValue(),
-                    Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+                    .getText()
+                    .setSpan(
+                            new BackgroundColorSpan(Color.YELLOW),
+                            (Integer) keyValueOld.getKey(),
+                            (Integer) keyValueOld.getValue(),
+                            Spanned.SPAN_INCLUSIVE_INCLUSIVE);
           } else {
             mInput
+                    .getText()
+                    .setSpan(
+                            new BackgroundColorSpan(Color.LTGRAY),
+                            (Integer) keyValueOld.getKey(),
+                            (Integer) keyValueOld.getValue(),
+                            Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+          }
+        }
+
+        Map.Entry keyValueNew = nodes.get(++mCurrent).getKey();
+        mInput
                 .getText()
                 .setSpan(
-                    new BackgroundColorSpan(Color.LTGRAY),
-                    (Integer) keyValueOld.getKey(),
-                    (Integer) keyValueOld.getValue(),
-                    Spanned.SPAN_INCLUSIVE_INCLUSIVE);
-          }
-          // highlighting previous element in list
-          Map.Entry keyValueNew = nodes.get(--mCurrent).getKey();
-          mInput
-              .getText()
-              .setSpan(
-                  new BackgroundColorSpan(Utils.getColor(this, R.color.search_text_highlight)),
-                  (Integer) keyValueNew.getKey(),
-                  (Integer) keyValueNew.getValue(),
-                  Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+                        new BackgroundColorSpan(Utils.getColor(this, R.color.search_text_highlight)),
+                        (Integer) keyValueNew.getKey(),
+                        (Integer) keyValueNew.getValue(),
+                        Spanned.SPAN_INCLUSIVE_INCLUSIVE);
 
-          // scrolling to the highlighted element
-          scrollView.scrollTo(
-              0,
-              (Integer) keyValueNew.getValue()
-                  + mInput.getLineHeight()
-                  + Math.round(mInput.getLineSpacingExtra())
-                  - getSupportActionBar().getHeight());
-        }
-        break;
-      case R.id.next:
-        // downButton
-        if (mCurrent < nodes.size() - 1) {
-
-          // setting older span back before setting new one
-          if (mCurrent != -1) {
-
-            Map.Entry keyValueOld = nodes.get(mCurrent).getKey();
-            if (getAppTheme().equals(AppTheme.LIGHT)) {
-              mInput
-                  .getText()
-                  .setSpan(
-                      new BackgroundColorSpan(Color.YELLOW),
-                      (Integer) keyValueOld.getKey(),
-                      (Integer) keyValueOld.getValue(),
-                      Spanned.SPAN_INCLUSIVE_INCLUSIVE);
-            } else {
-              mInput
-                  .getText()
-                  .setSpan(
-                      new BackgroundColorSpan(Color.LTGRAY),
-                      (Integer) keyValueOld.getKey(),
-                      (Integer) keyValueOld.getValue(),
-                      Spanned.SPAN_INCLUSIVE_INCLUSIVE);
-            }
-          }
-
-          Map.Entry keyValueNew = nodes.get(++mCurrent).getKey();
-          mInput
-              .getText()
-              .setSpan(
-                  new BackgroundColorSpan(Utils.getColor(this, R.color.search_text_highlight)),
-                  (Integer) keyValueNew.getKey(),
-                  (Integer) keyValueNew.getValue(),
-                  Spanned.SPAN_INCLUSIVE_INCLUSIVE);
-
-          // scrolling to the highlighted element
-          scrollView.scrollTo(
-              0,
-              (Integer) keyValueNew.getValue()
-                  + mInput.getLineHeight()
-                  + Math.round(mInput.getLineSpacingExtra())
-                  - getSupportActionBar().getHeight());
-        }
-        break;
-      case R.id.close:
-        // closeButton
-        findViewById(R.id.searchview).setVisibility(View.GONE);
-        cleanSpans();
-        break;
+        // scrolling to the highlighted element
+        scrollView.scrollTo(
+                0,
+                (Integer) keyValueNew.getValue()
+                        + mInput.getLineHeight()
+                        + Math.round(mInput.getLineSpacingExtra())
+                        - getSupportActionBar().getHeight());
+      }
+    } else if (id == R.id.close) {// closeButton
+      findViewById(R.id.searchview).setVisibility(View.GONE);
+      cleanSpans();
     }
   }
 
