@@ -727,13 +727,13 @@ public class Drawer implements NavigationView.OnNavigationItemSelectedListener {
     MenuMetadata meta = dataUtils.getDrawerMetadata(item);
     String path = meta.path;
 
+    AppTheme appTheme = mainActivity.getAppTheme();
     switch (item.getGroupId()) {
       case STORAGES_GROUP:
         if (!path.equals("/")) {
           GeneralDialogCreation.showPropertiesDialogForStorage(
               RootHelper.generateBaseFile(new File(path), true),
-              mainActivity,
-              mainActivity.getAppTheme());
+              mainActivity, appTheme);
         }
         break;
         // not to remove the first bookmark (storage) and permanent bookmarks
@@ -748,17 +748,20 @@ public class Drawer implements NavigationView.OnNavigationItemSelectedListener {
           mainActivity.showSftpDialog(title, path, true);
         } else if (path.startsWith(CloudHandler.CLOUD_PREFIX_DROPBOX)) {
           GeneralDialogCreation.showCloudDialog(
-              mainActivity, mainActivity.getAppTheme(), OpenMode.DROPBOX);
+              mainActivity, appTheme, OpenMode.DROPBOX);
         } else if (path.startsWith(CloudHandler.CLOUD_PREFIX_GOOGLE_DRIVE)) {
           GeneralDialogCreation.showCloudDialog(
-              mainActivity, mainActivity.getAppTheme(), OpenMode.GDRIVE);
+              mainActivity, appTheme, OpenMode.GDRIVE);
         } else if (path.startsWith(CloudHandler.CLOUD_PREFIX_BOX)) {
           GeneralDialogCreation.showCloudDialog(
-              mainActivity, mainActivity.getAppTheme(), OpenMode.BOX);
+              mainActivity, appTheme, OpenMode.BOX);
         } else if (path.startsWith(CloudHandler.CLOUD_PREFIX_ONE_DRIVE)) {
           GeneralDialogCreation.showCloudDialog(
-              mainActivity, mainActivity.getAppTheme(), OpenMode.ONEDRIVE);
+              mainActivity, appTheme, OpenMode.ONEDRIVE);
         }
+
+      default:
+        break;
     }
   }
 

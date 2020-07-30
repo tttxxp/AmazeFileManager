@@ -30,22 +30,27 @@ android {
         vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-
-    signingConfigs {
-        release
-        config
+    sourceSets {
+        main {
+            java.srcDirs += ['src/fdroid']}
     }
 
+//    signingConfigs {
+//        release
+//        config
+//    }
+
     buildTypes {
-        debug {
-//            applicationIdSuffix ".debug"
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
-            testProguardFile 'tests-proguard.cfg'
-        }
+//        debug {
+//            buildConfigField "boolean", "IS_VERSION_FDROID", "true"
+//            minifyEnabled false
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
+//            testProguardFile 'tests-proguard.cfg'
+//        }
 
         release {
-            signingConfig signingConfigs.release
+            buildConfigField "boolean", "IS_VERSION_FDROID", "true"
+//            signingConfig signingConfigs.release
 
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
@@ -56,20 +61,20 @@ android {
         abortOnError false
     }
 
-    flavorDimensions 'static'
-
-    productFlavors {
-        fdroid {
-            dimension 'static'
-            buildConfigField "boolean", "IS_VERSION_FDROID", "true"
-        }
-
-        play {
-            dimension 'static'
-            buildConfigField "boolean", "IS_VERSION_FDROID", "false"
-            signingConfig signingConfigs.config
-        }
-    }
+//    flavorDimensions 'static'
+//
+//    productFlavors {
+//        fdroid {
+//            dimension 'static'
+//            buildConfigField "boolean", "IS_VERSION_FDROID", "true"
+//        }
+//
+//        play {
+//            dimension 'static'
+//            buildConfigField "boolean", "IS_VERSION_FDROID", "false"
+//            signingConfig signingConfigs.config
+//        }
+//    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -189,6 +194,9 @@ dependencies {
         transitive = false
     }
     annotationProcessor "com.github.bumptech.glide:compiler:$glideVersion"
+    implementation ("com.github.bumptech.glide:okhttp3-integration:$glideVersion"){
+        exclude group: 'glide-parent'
+    }
 
     implementation "com.leinardi.android:speed-dial:$fabSpeedDialVersion"
 

@@ -339,7 +339,7 @@ public class FileUtils {
     ArrayList<Uri> uris = new ArrayList<>();
     boolean b = true;
     for (File f : a) {
-      uris.add(FileProvider.getUriForFile(c, c.getPackageName(), f));
+      uris.add(FileProvider.getUriForFile(c, c.getPackageName() + ".provider", f));
     }
 
     String mime = MimeTypes.getMimeType(a.get(0).getPath(), a.get(0).isDirectory());
@@ -383,7 +383,7 @@ public class FileUtils {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
       Uri downloadedApk =
           FileProvider.getUriForFile(
-              permissionsActivity.getApplicationContext(), permissionsActivity.getPackageName(), f);
+              permissionsActivity.getApplicationContext(), permissionsActivity.getPackageName() + ".provider", f);
       intent.setDataAndType(downloadedApk, type);
       intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
     } else {
@@ -441,7 +441,7 @@ public class FileUtils {
 
   /** Method supports showing a UI to ask user to open a file without any extension/mime */
   public static void openWith(final File f, final Context c, final boolean useNewStack) {
-    openWithInternal(FileProvider.getUriForFile(c, c.getPackageName(), f), c, useNewStack);
+    openWithInternal(FileProvider.getUriForFile(c, c.getPackageName() + ".provider", f), c, useNewStack);
   }
 
   public static void openWith(final DocumentFile f, final Context c, final boolean useNewStack) {
@@ -488,13 +488,13 @@ public class FileUtils {
                   intent = new Intent(c, DatabaseViewerActivity.class);
                   // DatabaseViewerActivity only accepts java.io.File paths, need to strip the URI
                   // to file's absolute path
-                  intent.putExtra(
-                      "path",
-                      uri.getPath()
-                          .substring(
-                              uri.getPath().indexOf(FILE_PROVIDER_PREFIX) - 1,
-                              FILE_PROVIDER_PREFIX.length() + 1));
-                  break;
+                  int index = uri.getPath().indexOf(FILE_PROVIDER_PREFIX) - 1;
+                  if (index >= 0) {
+                    intent.putExtra(
+                            "path",
+                            uri.getPath().substring(index, FILE_PROVIDER_PREFIX.length() + 1));
+                    break;
+                  }
                 case 5:
                   intent.setDataAndType(uri, "*/*");
                   break;
@@ -625,7 +625,7 @@ public class FileUtils {
     } else {
       try {
         openUnknownInternal(
-            FileProvider.getUriForFile(m, m.getPackageName(), f),
+            FileProvider.getUriForFile(m, m.getPackageName() + ".provider", f),
             MimeTypes.getMimeType(f.getAbsolutePath(), false),
             m,
             false,

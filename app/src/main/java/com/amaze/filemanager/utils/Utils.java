@@ -221,7 +221,7 @@ public class Utils {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 
           return FileProvider.getUriForFile(
-              context, context.getPackageName(), new File(baseFile.getPath()));
+              context, context.getPackageName() + ".provider", new File(baseFile.getPath()));
         } else {
           return Uri.fromFile(new File(baseFile.getPath()));
         }

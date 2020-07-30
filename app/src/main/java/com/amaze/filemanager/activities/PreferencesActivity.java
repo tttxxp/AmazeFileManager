@@ -44,9 +44,12 @@ import android.app.ActivityManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.preference.PreferenceFragment;
@@ -195,11 +198,22 @@ public class PreferencesActivity extends ThemedActivity
       int primaryColor =
           ColorPreferenceHelper.getPrimary(getCurrentColorPreference(), MainActivity.currentTab);
 
+      Drawable drawable = getResources().getDrawable(R.mipmap.ic_launcher);
+      Bitmap bitmap;
+      if (drawable instanceof BitmapDrawable) {
+        bitmap = ((BitmapDrawable) drawable).getBitmap();
+      } else {
+        int w = drawable.getIntrinsicWidth();
+        int h = drawable.getIntrinsicHeight();
+        bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawColor(Color.TRANSPARENT);
+        drawable.draw(canvas);
+      }
+
       ActivityManager.TaskDescription taskDescription =
-          new ActivityManager.TaskDescription(
-              "Amaze",
-              ((BitmapDrawable) getResources().getDrawable(R.mipmap.ic_launcher)).getBitmap(),
-              primaryColor);
+          new ActivityManager.TaskDescription("Amaze", bitmap, primaryColor);
       setTaskDescription(taskDescription);
     }
   }

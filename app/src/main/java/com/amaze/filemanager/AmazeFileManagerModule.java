@@ -32,7 +32,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 
 /** Ensures that Glide's generated API is created for the Gallery sample. */
-@GlideModule
+//@GlideModule
 public class AmazeFileManagerModule extends AppGlideModule {
   @Override
   public void registerComponents(Context context, Glide glide, Registry registry) {
